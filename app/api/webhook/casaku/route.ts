@@ -16,12 +16,7 @@ export async function POST(req: NextRequest) {
       .update(rawBody)
       .digest('hex');
 
-    const isValid = crypto.timingSafeEqual(
-      Buffer.from(signature, 'hex'),
-      Buffer.from(expectedSignature, 'hex')
-    );
-
-    if (!isValid) {
+    if (signature !== expectedSignature) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
