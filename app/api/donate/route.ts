@@ -11,7 +11,7 @@ export async function POST(req: Request) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-license-key': process.env.CASAKU_LICENSE_KEY as string
+        'x-license-key': process.env.CASAKU_LICENSE_KEY || ''
       },
       body: JSON.stringify({
         qr_id: qrId,
@@ -27,14 +27,21 @@ export async function POST(req: Request) {
 
     const trx = await response.json();
 
+    if (!response.ok || trx.status !== 200) {
+       return NextResponse.json({ 
+         success: false, 
+         message: trx.message || JSON.stringify(trx) 
+       }, { status: 400 });
+    }
+
     return NextResponse.json({ 
       success: true, 
       data: {
-        qr_string: trx.data.qr_string,
-        transaction_id: trx.data.transactionId
+        qr_string: trx.data?.qr_string,
+        transaction_id: trx.data?.transactionId
       }
     });
-  } catch (error) {
-    return NextResponse.json({ success: false }, { status: 500 });
+  } catch (error: any) {
+    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }
 }
